@@ -1,0 +1,202 @@
+<?php
+require_once __DIR__ . "/../models/Producto.php";
+
+class ProductoController
+{
+    private $producto;
+    public function __construct($db)
+    {
+        $this->producto = new Producto($db);
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Crear producto
+    |--------------------------------------------------------------------------
+    */
+
+    public function crear($data)
+    {
+        $codigo_sku = trim($data["codigo_sku"] ?? "");
+        $nombre = trim($data["nombre"] ?? "");
+        $marca = trim($data["marca"] ?? "");
+        $puntos = trim($data["puntos_requeridos"] ?? "");
+        $imagen = "";
+        $stock = trim($data["stock"] ?? "");
+
+        // Validaciones
+        if (
+            empty($codigo_sku) || empty($nombre) || empty($marca)
+        ) {
+            return [
+                "success" => false,
+                "message" => "Campos obligatorios incompletos"
+            ];
+        }
+
+        if (!is_numeric($puntos) || $puntos < 0) {
+            return [
+                "success" => false,
+                "message" => "Puntos inválidos"
+            ];
+        }
+
+        if (!is_numeric($stock) || $stock < 0) {
+            return [
+                "success" => false,
+                "message" => "Stock inválido"
+            ];
+        }
+        if (isset($data["imagen"]) && $data["imagen"]["error"] === 0) {
+            $archivo = $data["imagen"];
+            $nombreImagen =
+                time() . "_" . $archivo["name"];
+            $rutaDestino =
+                __DIR__ .
+                "/../uploads/productos/" . $nombreImagen;
+            if (
+                !move_uploaded_file(
+                    $archivo["tmp_name"],
+                    $rutaDestino
+                )
+            ) {
+
+                return [
+                    "success" => false,
+                    "message" => "Error al subir imagen"
+                ];
+            }
+            $imagen = $nombreImagen;
+        }
+
+        $result = $this->producto->crear(
+            $codigo_sku,
+            $nombre,
+            $marca,
+            $puntos,
+            $imagen,
+            $stock
+        );
+
+        if ($result) {
+            return [
+                "success" => true,
+                "message" => "Producto creado"
+            ];
+        }
+
+        return [
+            "success" => false,
+            "message" => "Error al crear producto"
+        ];
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Listar productos
+    |--------------------------------------------------------------------------
+    */
+    public function listar()
+    {
+        $usuario = getUsuarioAuth();
+
+        if (
+            $usuario &&
+            (int) $usuario["rol_id"] === 1
+        ) {
+            $productos = $this->producto->listarAdmin();
+        } else {
+            $productos = $this->producto->listar();
+        }
+        return [
+            "success" => true,
+            "message" => "Productos obtenidos",
+            "data" => $productos
+        ];
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Editar producto
+    |--------------------------------------------------------------------------
+    */
+    public function editar($data)
+    {
+        $id = $data["id"] ?? null;
+
+        if (!$id) {
+            return [
+                "success" => false,
+                "message" => "ID requerido"
+            ];
+        }
+        $result = $this->producto->editar(
+            $id,
+            $data["codigo_sku"],
+            $data["nombre"],
+            $data["marca"],
+            $data["puntos_requeridos"],
+            $data["imagen"],
+            $data["stock"]
+        );
+        if ($result) {
+            return [
+                "success" => true,
+                "message" => "Producto actualizado"
+            ];
+        }
+
+        return [
+            "success" => false,
+            "message" => "Error al actualizar producto"
+        ];
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Desactivar
+    |--------------------------------------------------------------------------
+    */
+    public function desactivar($id)
+    {
+        $result = $this->producto->desactivar($id);
+
+        if ($result) {
+            return [
+                "success" => true,
+                "message" => "Producto desactivado"
+            ];
+        }
+
+        return [
+            "success" => false,
+            "message" => "Error al desactivar producto"
+        ];
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Reactivar
+    |--------------------------------------------------------------------------
+    */
+    public function reactivar($id)
+    {
+        $result = $this->producto->reactivar($id);
+
+        if ($result) {
+            return [
+                "success" => true,
+                "message" => "Producto reactivado"
+            ];
+        }
+
+        return [
+            "success" => false,
+            "message" => "Error al reactivar producto"
+        ];
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Eliminar
+    |--------------------------------------------------------------------------
+    */
+    public function eliminar($id)
+    {
+        return $this->producto->eliminar($id);
+    }
+}
