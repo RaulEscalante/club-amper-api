@@ -1,7 +1,6 @@
 <?php
 
-class Database
-{
+class Database {
 
     private $host;
     private $db_name;
@@ -11,37 +10,24 @@ class Database
 
     public $conn;
 
-    public function __construct()
-    {
+    public function __construct() {
 
-        $this->host =
-            $_ENV['MYSQLHOST'] ?? getenv('MYSQLHOST');
+        $this->host = $_ENV['DB_HOST'];
 
-        $this->db_name =
-            $_ENV['MYSQLDATABASE'] ?? getenv('MYSQLDATABASE');
+        $this->db_name = $_ENV['DB_NAME'];
 
-        $this->username =
-            $_ENV['MYSQLUSER'] ?? getenv('MYSQLUSER');
+        $this->username = $_ENV['DB_USER'];
 
-        $this->password =
-            $_ENV['MYSQLPASSWORD'] ?? getenv('MYSQLPASSWORD');
+        $this->password = $_ENV['DB_PASSWORD'];
 
-        $this->port =
-            $_ENV['MYSQLPORT'] ?? getenv('MYSQLPORT');
+        $this->port = $_ENV['DB_PORT'];
     }
 
-    public function getConnection()
-    {
+    public function getConnection() {
 
         $this->conn = null;
 
         try {
-            echo json_encode([
-                "host" => $this->host,
-                "db" => $this->db_name,
-                "user" => $this->username,
-                "port" => $this->port
-            ]);
 
             $this->conn = new PDO(
                 "mysql:host={$this->host};port={$this->port};dbname={$this->db_name}",
