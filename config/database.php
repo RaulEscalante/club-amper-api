@@ -2,17 +2,26 @@
 
 class Database {
 
-    private $host = $_ENV['MYSQLHOST'];
-
-    private $db_name = $_ENV['MYSQLDATABASE'];
-
-    private $username = $_ENV['MYSQLUSER'];
-
-    private $password = $_ENV['MYSQLPASSWORD'];
-
-    private $port = $_ENV['MYSQLPORT'];
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
+    private $port;
 
     public $conn;
+
+    public function __construct() {
+
+        $this->host = getenv("MYSQLHOST");
+
+        $this->db_name = getenv("MYSQLDATABASE");
+
+        $this->username = getenv("MYSQLUSER");
+
+        $this->password = getenv("MYSQLPASSWORD");
+
+        $this->port = getenv("MYSQLPORT");
+    }
 
     public function getConnection() {
 
@@ -21,9 +30,7 @@ class Database {
         try {
 
             $this->conn = new PDO(
-                "mysql:host=" . $this->host .
-                ";port=" . $this->port .
-                ";dbname=" . $this->db_name,
+                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name}",
                 $this->username,
                 $this->password
             );
@@ -35,8 +42,10 @@ class Database {
 
         } catch (PDOException $exception) {
 
-            echo "Error de conexión: " .
-                 $exception->getMessage();
+            echo json_encode([
+                "success" => false,
+                "error" => $exception->getMessage()
+            ]);
         }
 
         return $this->conn;
