@@ -198,6 +198,7 @@ class Canje
             u.nombres,
             u.apellidos,
             u.documento,
+            u.telefono,
 
             d.nombre_producto,
             d.cantidad,

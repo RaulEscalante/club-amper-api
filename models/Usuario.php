@@ -14,6 +14,7 @@ class Usuario
         $nombres,
         $apellidos,
         $correo,
+        $telefono,
         $password
     ) {
         // Validar correo repetido
@@ -59,6 +60,7 @@ class Usuario
                     nombres,
                     apellidos,
                     correo,
+                    telefono,
                     password,
                     rol_id
                 )
@@ -68,6 +70,7 @@ class Usuario
                     :nombres,
                     :apellidos,
                     :correo,
+                    :telefono,
                     :password,
                     2
                 )";
@@ -79,6 +82,7 @@ class Usuario
         $stmt->bindParam(":nombres", $nombres);
         $stmt->bindParam(":apellidos", $apellidos);
         $stmt->bindParam(":correo", $correo);
+        $stmt->bindParam(":telefono", $telefono);
         $stmt->bindParam(":password", $passwordHash);
 
         return $stmt->execute();
@@ -120,6 +124,7 @@ class Usuario
             nombres,
             apellidos,
             correo,
+            telefono,
             puntos,
             rol_id,
             estado
@@ -133,5 +138,23 @@ class Usuario
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizarTelefono(
+        $id,
+        $telefono
+    ) {
+        $sql = "
+        UPDATE usuarios
+        SET telefono = :telefono
+        WHERE id = :id
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ":telefono" => $telefono,
+            ":id" => $id
+        ]);
     }
 }

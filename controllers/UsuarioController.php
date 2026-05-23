@@ -44,6 +44,9 @@ class UsuarioController
         $correo = trim(
             $data["correo"] ?? ""
         );
+        $telefono = trim(
+            $data["telefono"] ?? ""
+        );
         $password = trim(
             $data["password"] ?? ""
         );
@@ -58,6 +61,7 @@ class UsuarioController
             empty($nombres) ||
             empty($apellidos) ||
             empty($correo) ||
+            empty($telefono) ||
             empty($password)
         ) {
             jsonResponse(false, "Todos los campos son obligatorios", null, 400);
@@ -81,6 +85,9 @@ class UsuarioController
         if (!isValidEmail($correo)) {
             jsonResponse(false, "Correo inválido", null, 400);
         }
+        if (!preg_match('/^[0-9]{9}$/', $telefono)) {
+            jsonResponse(false, "El teléfono debe tener 9 dígitos", null, 400);
+        }
         // Password
         if (strlen($password) < 6) {
             jsonResponse(false, "La contraseña debe tener mínimo 6 caracteres", null, 400);
@@ -96,6 +103,7 @@ class UsuarioController
             $nombres,
             $apellidos,
             $correo,
+            $telefono,
             $password
         );
         if ($result === "correo_existente") {
@@ -194,6 +202,41 @@ class UsuarioController
             "success" => true,
             "message" => "Perfil obtenido",
             "data" => $data
+        ];
+    }
+    public function actualizarTelefono(
+        $usuario,
+        $data
+    ) {
+        $telefono =
+            trim($data["telefono"] ?? "");
+
+        if (!preg_match('/^[0-9]{9}$/', $telefono)) {
+
+            return [
+                "success" => false,
+                "message" => "Número inválido"
+            ];
+        }
+
+        $result =
+            $this->usuarioModel
+                ->actualizarTelefono(
+                    $usuario["id"],
+                    $telefono
+                );
+
+        if (!$result) {
+
+            return [
+                "success" => false,
+                "message" => "Error al actualizar"
+            ];
+        }
+
+        return [
+            "success" => true,
+            "message" => "Teléfono actualizado"
         ];
     }
 }
