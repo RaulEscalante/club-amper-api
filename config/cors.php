@@ -12,7 +12,7 @@ if (in_array($origin, $allowedOrigins)) {
     header("Access-Control-Allow-Origin: $origin");
 }
 
-header("Access-Control-Allow-Headers: Content-Type, Authorization, Accept");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, Accept, usuario");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Content-Type: application/json");
 
