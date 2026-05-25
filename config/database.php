@@ -1,6 +1,7 @@
 <?php
 
-class Database {
+class Database
+{
 
     private $host;
     private $db_name;
@@ -10,20 +11,27 @@ class Database {
 
     public $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
 
-        $this->host = $_ENV['DB_HOST'];
+        $this->host =
+            $_ENV['DB_HOST'] ?? "localhost";
 
-        $this->db_name = $_ENV['DB_NAME'];
+        $this->db_name =
+            $_ENV['DB_NAME'] ?? "club_amper";
 
-        $this->username = $_ENV['DB_USER'];
+        $this->username =
+            $_ENV['DB_USER'] ?? "root";
 
-        $this->password = $_ENV['DB_PASSWORD'];
+        $this->password =
+            $_ENV['DB_PASSWORD'] ?? "";
 
-        $this->port = $_ENV['DB_PORT'];
+        $this->port =
+            $_ENV['DB_PORT'] ?? 3306;
     }
 
-    public function getConnection() {
+    public function getConnection()
+    {
 
         $this->conn = null;
 
