@@ -15,7 +15,7 @@ function requireAdmin()
             false,
             "No autorizado",
             null,
-            401
+            403
         );
     }
 

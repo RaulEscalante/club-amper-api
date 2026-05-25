@@ -4,7 +4,7 @@ require_once "../../config/bootstrap.php";
 require_once "../../controllers/CanjeController.php";
 require_once "../../middleware/AdminMiddleware.php";
 
-requireAdmin();
+$usuario = requireAdmin();
 
 $db = new Database();
 $conn = $db->getConnection();

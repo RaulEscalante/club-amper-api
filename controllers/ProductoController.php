@@ -46,13 +46,99 @@ class ProductoController
                 "message" => "Stock inválido"
             ];
         }
-        if (isset($data["imagen"]) && $data["imagen"]["error"] === 0) {
+
+        if (
+            isset($data["imagen"]) &&
+            $data["imagen"]["error"] === 0
+        ) {
             $archivo = $data["imagen"];
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDAR MIME
+            |--------------------------------------------------------------------------
+            */
+            $permitidos = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+            if ($finfo === false) {
+
+                return [
+                    "success" => false,
+                    "message" => "Error al validar archivo"
+                ];
+            }
+            $mimeReal = finfo_file(
+                $finfo,
+                $archivo["tmp_name"]
+            );
+
+            finfo_close($finfo);
+
+            if (!in_array($mimeReal, $permitidos)) {
+
+                return [
+                    "success" => false,
+                    "message" => "Formato de imagen inválido"
+                ];
+            }
+            /*
+            |--------------------------------------------------------------------------
+            | VALIDAR TAMAÑO
+            |--------------------------------------------------------------------------
+            */
+            if ($archivo["size"] > 2 * 1024 * 1024) {
+                return [
+                    "success" => false,
+                    "message" => "La imagen excede 2MB"
+                ];
+            }
+            /*
+            |--------------------------------------------------------------------------
+            | GENERAR NOMBRE SEGURO
+            |--------------------------------------------------------------------------
+            */
+            $extensionesPermitidas = [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            ];
+
+            $extension = strtolower(
+                pathinfo(
+                    $archivo["name"],
+                    PATHINFO_EXTENSION
+                )
+            );
+
+            if (
+                !in_array(
+                    $extension,
+                    $extensionesPermitidas
+                )
+            ) {
+
+                return [
+                    "success" => false,
+                    "message" => "Extensión inválida"
+                ];
+            }
             $nombreImagen =
-                time() . "_" . $archivo["name"];
+                uniqid() . "." . $extension;
             $rutaDestino =
                 __DIR__ .
-                "/../uploads/productos/" . $nombreImagen;
+                "/../uploads/productos/" .
+                $nombreImagen;
+            /*
+            |--------------------------------------------------------------------------
+            | SUBIR
+            |--------------------------------------------------------------------------
+            */
             if (
                 !move_uploaded_file(
                     $archivo["tmp_name"],
@@ -65,6 +151,7 @@ class ProductoController
                     "message" => "Error al subir imagen"
                 ];
             }
+
             $imagen = $nombreImagen;
         }
 

@@ -11,6 +11,14 @@ $controller =
     new UsuarioController($conn);
 
 $usuario = getUsuarioAuth();
+if (!$usuario) {
+    jsonResponse(
+        false,
+        "No autorizado",
+        null,
+        401
+    );
+}
 
 $data = json_decode(
     file_get_contents("php://input"),
