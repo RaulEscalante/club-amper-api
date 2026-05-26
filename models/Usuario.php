@@ -62,7 +62,9 @@ class Usuario
                     correo,
                     telefono,
                     password,
-                    rol_id
+                    rol_id,
+                    token_verificacion,
+                    email_verificado
                 )
                 VALUES (
                     :tipo_documento,

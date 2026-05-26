@@ -24,6 +24,7 @@ class UsuarioController
         if (!$data) {
             jsonResponse(false, "Datos incompletos", null, 400);
         }
+        $token = bin2hex(random_bytes(32));
         /*
         |--------------------------------------------------------------------------
         | Campos
@@ -104,7 +105,8 @@ class UsuarioController
             $apellidos,
             $correo,
             $telefono,
-            $password
+            $password,
+            $token
         );
         if ($result === "correo_existente") {
             jsonResponse(false, "El correo ya está registrado", null, 409);
