@@ -64,14 +64,14 @@ class UsuarioController
             empty($telefono) ||
             empty($password)
         ) {
-            return ["success"=>false,"message"=> "Todos los campos son obligatorios", "status" => 400];
+            return ["success" => false, "message" => "Todos los campos son obligatorios", "status" => 400];
         }
         // DNI
         if (
             $tipo_documento === "dni" &&
             !isValidDNI($documento)
         ) {
-            return ["success"=>false,"message"=> "El DNI debe tener 8 dígitos", "status" => 400];
+            return ["success" => false, "message" => "El DNI debe tener 8 dígitos", "status" => 400];
         }
         // RUC
         if (
@@ -79,18 +79,18 @@ class UsuarioController
             !isValidRUC($documento)
         ) {
 
-            return ["success"=>false,"message"=> "El RUC debe tener 11 dígitos", "status" => 400];
+            return ["success" => false, "message" => "El RUC debe tener 11 dígitos", "status" => 400];
         }
         // Correo
         if (!isValidEmail($correo)) {
-            return ["success"=>false,"message"=>"Correo inválido", "status" => 400];
+            return ["success" => false, "message" => "Correo inválido", "status" => 400];
         }
         if (!preg_match('/^[0-9]{9}$/', $telefono)) {
-            return ["success"=>false,"message"=>"El teléfono debe tener 9 dígitos", "status" => 400];
+            return ["success" => false, "message" => "El teléfono debe tener 9 dígitos", "status" => 400];
         }
         // Password
         if (strlen($password) < 6) {
-            return ["success"=>false,"message"=>"La contraseña debe tener mínimo 6 caracteres", "status" => 400];
+            return ["success" => false, "message" => "La contraseña debe tener mínimo 6 caracteres", "status" => 400];
         }
         /*
         |--------------------------------------------------------------------------
@@ -129,7 +129,8 @@ class UsuarioController
             require_once __DIR__ . "/../helpers/Mailer.php";
             Mailer::enviarVerificacion($correo, $nombres, $token);
         } catch (Throwable $e) { // ← este es el único cambio necesario
-            error_log("Error email: " . $e->getMessage());
+            error_log("Error email DETALLE: " . $e->getMessage());
+            error_log("Error email TRACE: " . $e->getTraceAsString());
         }
 
         return jsonResponse(true, "Usuario registrado"); // ahora sí llega aquí
