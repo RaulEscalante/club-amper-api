@@ -15,7 +15,8 @@ class Usuario
         $apellidos,
         $correo,
         $telefono,
-        $password
+        $password,
+        $token
     ) {
         // Validar correo repetido
         $checkSql = "SELECT id FROM usuarios WHERE correo = :correo LIMIT 1";
@@ -53,8 +54,6 @@ class Usuario
             $password,
             PASSWORD_DEFAULT
         );
-
-        $token = bin2hex(random_bytes(32));
 
         $sql = "INSERT INTO usuarios (
                     tipo_documento,
@@ -94,16 +93,7 @@ class Usuario
 
         $resultado = $stmt->execute();
 
-        if ($resultado) {
-            require_once __DIR__ . "/../helpers/Mailer.php";
-            Mailer::enviarVerificacion(
-                $correo,
-                $nombres,
-                $token
-            );
-            return true;
-        }
-        return false;
+        return $resultado;
     }
 
     public function login($correo, $password)

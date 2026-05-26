@@ -90,13 +90,15 @@ class UsuarioController
         }
         // Password
         if (strlen($password) < 6) {
-           return jsonResponse(false, "La contraseña debe tener mínimo 6 caracteres", null, 400);
+            return jsonResponse(false, "La contraseña debe tener mínimo 6 caracteres", null, 400);
         }
         /*
         |--------------------------------------------------------------------------
         | Registrar
         |--------------------------------------------------------------------------
         */
+        $token = bin2hex(random_bytes(32));
+
         $result = $this->usuarioModel->registrar(
             $tipo_documento,
             $documento,
@@ -104,7 +106,8 @@ class UsuarioController
             $apellidos,
             $correo,
             $telefono,
-            $password
+            $password,
+            $token
         );
         if ($result === "correo_existente") {
             return jsonResponse(false, "El correo ya está registrado", null, 409);
@@ -120,6 +123,18 @@ class UsuarioController
                 null,
                 500
             );
+        }
+
+        try {
+            require_once __DIR__ . "/../helpers/Mailer.php";
+
+            Mailer::enviarVerificacion(
+                $correo,
+                $nombres,
+                $token
+            );
+        } catch (Exception $e) {
+            error_log("Error email: " . $e->getMessage());
         }
 
         return jsonResponse(
