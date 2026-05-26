@@ -214,15 +214,205 @@ class ProductoController
                 "message" => "ID requerido"
             ];
         }
+
+        /*
+        |------------------------------------------------------------------
+        | CAMPOS
+        |------------------------------------------------------------------
+        */
+        $codigo_sku = trim($data["codigo_sku"] ?? "");
+        $nombre = trim($data["nombre"] ?? "");
+        $marca = trim($data["marca"] ?? "");
+        $puntos = trim($data["puntos_requeridos"] ?? "");
+        $stock = trim($data["stock"] ?? "");
+
+        /*
+        |------------------------------------------------------------------
+        | IMAGEN ACTUAL
+        |------------------------------------------------------------------
+        */
+        $imagen = $data["imagen_actual"] ?? "";
+
+        /*
+        |------------------------------------------------------------------
+        | VALIDACIONES
+        |------------------------------------------------------------------
+        */
+        if (
+            empty($codigo_sku) ||
+            empty($nombre) ||
+            empty($marca)
+        ) {
+            return [
+                "success" => false,
+                "message" => "Campos obligatorios incompletos"
+            ];
+        }
+
+        /*
+        |------------------------------------------------------------------
+        | NUEVA IMAGEN
+        |------------------------------------------------------------------
+        */
+        if (
+            isset($data["imagen"]) &&
+            $data["imagen"]["error"] === 0
+        ) {
+
+            $archivo = $data["imagen"];
+
+            /*
+            |--------------------------------------------------------------
+            | VALIDAR MIME
+            |--------------------------------------------------------------
+            */
+            $permitidos = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+            if ($finfo === false) {
+
+                return [
+                    "success" => false,
+                    "message" => "Error al validar archivo"
+                ];
+            }
+
+            $mimeReal = finfo_file(
+                $finfo,
+                $archivo["tmp_name"]
+            );
+
+            finfo_close($finfo);
+
+            if (!in_array($mimeReal, $permitidos)) {
+
+                return [
+                    "success" => false,
+                    "message" => "Formato inválido"
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------
+            | VALIDAR TAMAÑO
+            |--------------------------------------------------------------
+            */
+            if ($archivo["size"] > 2 * 1024 * 1024) {
+
+                return [
+                    "success" => false,
+                    "message" => "Imagen excede 2MB"
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------
+            | EXTENSIÓN
+            |--------------------------------------------------------------
+            */
+            $extension = strtolower(
+                pathinfo(
+                    $archivo["name"],
+                    PATHINFO_EXTENSION
+                )
+            );
+
+            $extensionesPermitidas = [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+            ];
+
+            if (
+                !in_array(
+                    $extension,
+                    $extensionesPermitidas
+                )
+            ) {
+
+                return [
+                    "success" => false,
+                    "message" => "Extensión inválida"
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------
+            | NUEVO NOMBRE
+            |--------------------------------------------------------------
+            */
+            $nombreImagen =
+                uniqid() . "." . $extension;
+
+            $rutaDestino =
+                __DIR__ .
+                "/../uploads/productos/" .
+                $nombreImagen;
+
+            /*
+            |--------------------------------------------------------------
+            | SUBIR
+            |--------------------------------------------------------------
+            */
+            if (
+                !move_uploaded_file(
+                    $archivo["tmp_name"],
+                    $rutaDestino
+                )
+            ) {
+
+                return [
+                    "success" => false,
+                    "message" => "Error al subir imagen"
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------
+            | ELIMINAR IMAGEN ANTERIOR
+            |--------------------------------------------------------------
+            */
+            if (!empty($imagen)) {
+
+                $rutaAnterior =
+                    __DIR__ .
+                    "/../uploads/productos/" .
+                    $imagen;
+
+                if (file_exists($rutaAnterior)) {
+                    unlink($rutaAnterior);
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------
+            | NUEVA IMAGEN
+            |--------------------------------------------------------------
+            */
+            $imagen = $nombreImagen;
+        }
+
+        /*
+        |------------------------------------------------------------------
+        | UPDATE
+        |------------------------------------------------------------------
+        */
         $result = $this->producto->editar(
             $id,
-            $data["codigo_sku"],
-            $data["nombre"],
-            $data["marca"],
-            $data["puntos_requeridos"],
-            $data["imagen"],
-            $data["stock"]
+            $codigo_sku,
+            $nombre,
+            $marca,
+            $puntos,
+            $imagen,
+            $stock
         );
+
         if ($result) {
             return [
                 "success" => true,
