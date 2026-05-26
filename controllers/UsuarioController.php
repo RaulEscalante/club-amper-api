@@ -24,7 +24,6 @@ class UsuarioController
         if (!$data) {
             jsonResponse(false, "Datos incompletos", null, 400);
         }
-        $token = bin2hex(random_bytes(32));
         /*
         |--------------------------------------------------------------------------
         | Campos
@@ -105,8 +104,7 @@ class UsuarioController
             $apellidos,
             $correo,
             $telefono,
-            $password,
-            $token
+            $password
         );
         if ($result === "correo_existente") {
             jsonResponse(false, "El correo ya está registrado", null, 409);
@@ -239,6 +237,40 @@ class UsuarioController
         return [
             "success" => true,
             "message" => "Teléfono actualizado"
+        ];
+    }
+
+    /*
+|--------------------------------------------------------------------------
+| Verificar correo
+|--------------------------------------------------------------------------
+*/
+
+    public function verificarCorreo($token)
+    {
+        if (empty($token)) {
+
+            return [
+                "success" => false,
+                "message" => "Token inválido"
+            ];
+        }
+
+        $result =
+            $this->usuarioModel
+                ->verificarEmail($token);
+
+        if (!$result) {
+
+            return [
+                "success" => false,
+                "message" => "Token inválido o expirado"
+            ];
+        }
+
+        return [
+            "success" => true,
+            "message" => "Correo verificado correctamente"
         ];
     }
 }

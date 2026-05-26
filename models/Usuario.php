@@ -54,6 +54,8 @@ class Usuario
             PASSWORD_DEFAULT
         );
 
+        $token = bin2hex(random_bytes(32));
+
         $sql = "INSERT INTO usuarios (
                     tipo_documento,
                     documento,
@@ -74,7 +76,9 @@ class Usuario
                     :correo,
                     :telefono,
                     :password,
-                    2
+                    2,
+                    :token_verificacion,
+                    0
                 )";
 
         $stmt = $this->conn->prepare($sql);
@@ -86,8 +90,20 @@ class Usuario
         $stmt->bindParam(":correo", $correo);
         $stmt->bindParam(":telefono", $telefono);
         $stmt->bindParam(":password", $passwordHash);
+        $stmt->bindParam(":token_verificacion", $token);
 
-        return $stmt->execute();
+        $resultado = $stmt->execute();
+
+        if ($resultado) {
+            require_once __DIR__ . "/../helpers/Mailer.php";
+            Mailer::enviarVerificacion(
+                $correo,
+                $nombres,
+                $token
+            );
+            return true;
+        }
+        return false;
     }
 
     public function login($correo, $password)
@@ -158,5 +174,46 @@ class Usuario
             ":telefono" => $telefono,
             ":id" => $id
         ]);
+    }
+
+    /*
+|--------------------------------------------------------------------------
+| Verificar email
+|--------------------------------------------------------------------------
+*/
+    public function verificarEmail($token)
+    {
+        $sql = "
+        SELECT id 
+        FROM usuarios
+        WHERE token_verificacion = :token
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bindParam(":token", $token);
+
+        $stmt->execute();
+
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$usuario) {
+            return false;
+        }
+
+        $updateSql = "
+        UPDATE usuarios
+        SET 
+            email_verificado = 1,
+            token_verificacion = NULL
+        WHERE id = :id
+    ";
+
+        $updateStmt = $this->conn->prepare($updateSql);
+
+        $updateStmt->bindParam(":id", $usuario["id"]);
+
+        return $updateStmt->execute();
     }
 }

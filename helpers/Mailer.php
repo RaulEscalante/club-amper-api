@@ -7,31 +7,85 @@ require_once __DIR__ . "/../vendor/autoload.php";
 
 class Mailer {
 
-    public static function enviarVerificacion($correo, $token) {
+    public static function enviarVerificacion(
+        $correo,
+        $nombre,
+        $token
+    ) {
 
         $mail = new PHPMailer(true);
 
         try {
 
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+
+            $mail->Host =
+                $_ENV["SMTP_HOST"];
+
             $mail->SMTPAuth = true;
-            $mail->Username = 'TU_CORREO@gmail.com';
-            $mail->Password = 'TU_APP_PASSWORD';
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = 587;
 
-            $mail->setFrom('TU_CORREO@gmail.com', 'Club Amper');
-            $mail->addAddress($correo);
+            $mail->Username =
+                $_ENV["SMTP_USER"];
 
-            $link = "https://club-amper.vercel.app/verificar?token=$token";
+            $mail->Password =
+                $_ENV["SMTP_PASS"];
 
+            $mail->SMTPSecure =
+                PHPMailer::ENCRYPTION_SMTPS;
+
+            $mail->Port =
+                $_ENV["SMTP_PORT"];
+
+            $mail->CharSet = "UTF-8";
+
+            // REMITENTE
+            $mail->setFrom(
+                $_ENV["SMTP_FROM"],
+                "Club Amper"
+            );
+
+            // DESTINO
+            $mail->addAddress(
+                $correo,
+                $nombre
+            );
+
+            // LINK
+            $link =
+                $_ENV["APP_URL"]
+                . "/verificar?token="
+                . $token;
+
+            // CONTENIDO
             $mail->isHTML(true);
-            $mail->Subject = "Verifica tu cuenta";
+
+            $mail->Subject =
+                "Verifica tu cuenta";
+
             $mail->Body = "
-                <h3>Bienvenido a Club Amper</h3>
-                <p>Haz click para verificar tu cuenta:</p>
-                <a href='$link'>Verificar cuenta</a>
+                <h2>Bienvenido a Club Amper</h2>
+
+                <p>
+                    Hola {$nombre},
+                    gracias por registrarte.
+                </p>
+
+                <p>
+                    Haz click aquí para verificar tu cuenta:
+                </p>
+
+                <a href='{$link}'
+                   style='
+                        background:#bb1818;
+                        color:white;
+                        padding:12px 18px;
+                        text-decoration:none;
+                        border-radius:8px;
+                        display:inline-block;
+                   '
+                >
+                    Verificar cuenta
+                </a>
             ";
 
             $mail->send();
@@ -39,6 +93,8 @@ class Mailer {
             return true;
 
         } catch (Exception $e) {
+
+            error_log($mail->ErrorInfo);
 
             return false;
         }
