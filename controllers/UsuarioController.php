@@ -127,20 +127,12 @@ class UsuarioController
 
         try {
             require_once __DIR__ . "/../helpers/Mailer.php";
-
-            Mailer::enviarVerificacion(
-                $correo,
-                $nombres,
-                $token
-            );
-        } catch (Exception $e) {
+            Mailer::enviarVerificacion($correo, $nombres, $token);
+        } catch (Throwable $e) { // ← este es el único cambio necesario
             error_log("Error email: " . $e->getMessage());
         }
 
-        return jsonResponse(
-            true,
-            "Usuario registrado"
-        );
+        return jsonResponse(true, "Usuario registrado"); // ahora sí llega aquí
     }
 
     /*
