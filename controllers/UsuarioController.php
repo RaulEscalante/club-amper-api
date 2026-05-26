@@ -22,7 +22,7 @@ class UsuarioController
             true
         );
         if (!$data) {
-            jsonResponse(false, "Datos incompletos", null, 400);
+            return jsonResponse(false, "Datos incompletos", null, 400);
         }
         /*
         |--------------------------------------------------------------------------
@@ -64,14 +64,14 @@ class UsuarioController
             empty($telefono) ||
             empty($password)
         ) {
-            jsonResponse(false, "Todos los campos son obligatorios", null, 400);
+            return jsonResponse(false, "Todos los campos son obligatorios", null, 400);
         }
         // DNI
         if (
             $tipo_documento === "dni" &&
             !isValidDNI($documento)
         ) {
-            jsonResponse(false, "El DNI debe tener 8 dígitos", null, 400);
+            return jsonResponse(false, "El DNI debe tener 8 dígitos", null, 400);
         }
         // RUC
         if (
@@ -79,18 +79,18 @@ class UsuarioController
             !isValidRUC($documento)
         ) {
 
-            jsonResponse(false, "El RUC debe tener 11 dígitos", null, 400);
+            return jsonResponse(false, "El RUC debe tener 11 dígitos", null, 400);
         }
         // Correo
         if (!isValidEmail($correo)) {
-            jsonResponse(false, "Correo inválido", null, 400);
+            return jsonResponse(false, "Correo inválido", null, 400);
         }
         if (!preg_match('/^[0-9]{9}$/', $telefono)) {
-            jsonResponse(false, "El teléfono debe tener 9 dígitos", null, 400);
+            return jsonResponse(false, "El teléfono debe tener 9 dígitos", null, 400);
         }
         // Password
         if (strlen($password) < 6) {
-            jsonResponse(false, "La contraseña debe tener mínimo 6 caracteres", null, 400);
+           return jsonResponse(false, "La contraseña debe tener mínimo 6 caracteres", null, 400);
         }
         /*
         |--------------------------------------------------------------------------
@@ -107,14 +107,14 @@ class UsuarioController
             $password
         );
         if ($result === "correo_existente") {
-            jsonResponse(false, "El correo ya está registrado", null, 409);
+            return jsonResponse(false, "El correo ya está registrado", null, 409);
         }
 
         if ($result === "documento_existente") {
-            jsonResponse(false, "El documento ya está registrado", null, 409);
+            return jsonResponse(false, "El documento ya está registrado", null, 409);
         }
         if (!$result) {
-            jsonResponse(
+            return jsonResponse(
                 false,
                 "Error al registrar",
                 null,
@@ -122,7 +122,7 @@ class UsuarioController
             );
         }
 
-        jsonResponse(
+        return jsonResponse(
             true,
             "Usuario registrado"
         );
@@ -143,7 +143,7 @@ class UsuarioController
 
         if (!$data) {
 
-            jsonResponse(
+            return jsonResponse(
                 false,
                 "Datos incompletos",
                 null,
@@ -164,7 +164,7 @@ class UsuarioController
             empty($password)
         ) {
 
-            jsonResponse(
+            return jsonResponse(
                 false,
                 "Correo y contraseña obligatorios",
                 null,
@@ -179,7 +179,7 @@ class UsuarioController
 
         if (!$result) {
 
-            jsonResponse(
+            return jsonResponse(
                 false,
                 "Credenciales incorrectas",
                 null,
@@ -187,7 +187,7 @@ class UsuarioController
             );
         }
 
-        jsonResponse(
+        return jsonResponse(
             true,
             "Login correcto",
             $result
