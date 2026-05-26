@@ -22,7 +22,7 @@ class UsuarioController
             true
         );
         if (!$data) {
-            return jsonResponse(false, "Datos incompletos", null, 400);
+            return ["success" => false, "message" => "Datos incompletos", "status" => 400];
         }
         /*
         |--------------------------------------------------------------------------
@@ -64,14 +64,14 @@ class UsuarioController
             empty($telefono) ||
             empty($password)
         ) {
-            return jsonResponse(false, "Todos los campos son obligatorios", null, 400);
+            return ["success"=>false,"message"=> "Todos los campos son obligatorios", "status" => 400];
         }
         // DNI
         if (
             $tipo_documento === "dni" &&
             !isValidDNI($documento)
         ) {
-            return jsonResponse(false, "El DNI debe tener 8 dígitos", null, 400);
+            return ["success"=>false,"message"=> "El DNI debe tener 8 dígitos", "status" => 400];
         }
         // RUC
         if (
@@ -79,18 +79,18 @@ class UsuarioController
             !isValidRUC($documento)
         ) {
 
-            return jsonResponse(false, "El RUC debe tener 11 dígitos", null, 400);
+            return ["success"=>false,"message"=> "El RUC debe tener 11 dígitos", "status" => 400];
         }
         // Correo
         if (!isValidEmail($correo)) {
-            return jsonResponse(false, "Correo inválido", null, 400);
+            return ["success"=>false,"message"=>"Correo inválido", "status" => 400];
         }
         if (!preg_match('/^[0-9]{9}$/', $telefono)) {
-            return jsonResponse(false, "El teléfono debe tener 9 dígitos", null, 400);
+            return ["success"=>false,"message"=>"El teléfono debe tener 9 dígitos", "status" => 400];
         }
         // Password
         if (strlen($password) < 6) {
-            return jsonResponse(false, "La contraseña debe tener mínimo 6 caracteres", null, 400);
+            return ["success"=>false,"message"=>"La contraseña debe tener mínimo 6 caracteres", "status" => 400];
         }
         /*
         |--------------------------------------------------------------------------
@@ -256,28 +256,15 @@ class UsuarioController
     public function verificarCorreo($token)
     {
         if (empty($token)) {
-
-            return [
-                "success" => false,
-                "message" => "Token inválido"
-            ];
+            return ["success" => false, "message" => "Token inválido"];
         }
 
-        $result =
-            $this->usuarioModel
-                ->verificarEmail($token);
+        $result = $this->usuarioModel->verificarEmail($token);
 
         if (!$result) {
-
-            return [
-                "success" => false,
-                "message" => "Token inválido o expirado"
-            ];
+            return ["success" => false, "message" => "Token inválido o expirado"];
         }
 
-        return [
-            "success" => true,
-            "message" => "Correo verificado correctamente"
-        ];
+        return ["success" => true, "message" => "Correo verificado correctamente"];
     }
 }
