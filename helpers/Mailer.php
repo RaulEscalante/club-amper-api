@@ -24,18 +24,14 @@ class Mailer
 
             $mail->isSMTP();
 
-            $mail->Host = getenv("SMTP_HOST");
-
+            $mail->Host = "smtp.gmail.com";
             $mail->SMTPAuth = true;
 
-            $mail->Username = getenv("SMTP_USER");
+            $mail->Username = "raulescalantem14@gmail.com";
+            $mail->Password = "lrpb pnju eils bizq";
 
-            $mail->Password = getenv("SMTP_PASS");
-
-            $mail->SMTPSecure =
-                PHPMailer::ENCRYPTION_SMTPS;
-
-            $mail->Port = getenv("SMTP_PORT");
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
 
             $mail->CharSet = "UTF-8";
 
