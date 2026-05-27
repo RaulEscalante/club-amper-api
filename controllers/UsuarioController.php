@@ -128,8 +128,17 @@ class UsuarioController
         try {
             require_once __DIR__ . "/../helpers/Mailer.php";
             file_put_contents("/tmp/mail_debug.txt", "Intentando enviar a: " . $correo . "\n", FILE_APPEND);
-            Mailer::enviarVerificacion($correo, $nombres, $token);
-            file_put_contents("/tmp/mail_debug.txt", "Enviado OK\n", FILE_APPEND);
+            $resultadoMail = Mailer::enviarVerificacion(
+                $correo,
+                $nombres,
+                $token
+            );
+
+            file_put_contents(
+                "/tmp/mail_debug.txt",
+                "Resultado mail: " . ($resultadoMail ? "OK" : "FAIL") . "\n",
+                FILE_APPEND
+            );
         } catch (Exception $e) {
             file_put_contents("/tmp/mail_debug.txt", "Error: " . $e->getMessage() . "\n", FILE_APPEND);
         }

@@ -7,6 +7,7 @@ require_once __DIR__ . "/../vendor/autoload.php";
 
 class Mailer
 {
+
     public static function enviarVerificacion(
         $correo,
         $nombre,
@@ -19,12 +20,6 @@ class Mailer
 
             $mail->isSMTP();
 
-            $mail->SMTPDebug = 0;
-
-            $mail->Debugoutput = function ($str, $level) {
-                error_log("SMTP DEBUG: $str");
-            };
-
             $mail->Host = getenv("SMTP_HOST");
 
             $mail->SMTPAuth = true;
@@ -34,27 +29,31 @@ class Mailer
             $mail->Password = getenv("SMTP_PASS");
 
             $mail->SMTPSecure =
-                PHPMailer::ENCRYPTION_STARTTLS;
+                PHPMailer::ENCRYPTION_SMTPS;
 
             $mail->Port = getenv("SMTP_PORT");
 
             $mail->CharSet = "UTF-8";
 
+            // REMITENTE
             $mail->setFrom(
                 getenv("SMTP_FROM"),
                 "Club Amper"
             );
 
+            // DESTINO
             $mail->addAddress(
                 $correo,
                 $nombre
             );
 
+            // LINK
             $link =
                 getenv("APP_URL")
                 . "/verificar?token="
                 . $token;
 
+            // CONTENIDO
             $mail->isHTML(true);
 
             $mail->Subject =
@@ -87,12 +86,15 @@ class Mailer
             ";
 
             $mail->send();
-            error_log("CORREO ENVIADO A: " . $correo);
+
             return true;
 
         } catch (Exception $e) {
+            error_log("MAIL ERROR: " . $mail->ErrorInfo);
 
-            throw new Exception($mail->ErrorInfo);
+            error_log($mail->ErrorInfo);
+
+            return false;
         }
     }
 }
