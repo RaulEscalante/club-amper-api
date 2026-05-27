@@ -127,20 +127,32 @@ class UsuarioController
 
         try {
             require_once __DIR__ . "/../helpers/Mailer.php";
-            file_put_contents("/tmp/mail_debug.txt", "Intentando enviar a: " . $correo . "\n", FILE_APPEND);
-            $resultadoMail = Mailer::enviarVerificacion(
+
+            // IMPORTANTE: terminar respuesta HTTP
+            if (function_exists('fastcgi_finish_request')) {
+                fastcgi_finish_request();
+            }
+
+            // LOG
+            file_put_contents(
+                "/tmp/mail_debug.txt",
+                "Intentando enviar a: " . $correo . "\n",
+                FILE_APPEND
+            );
+
+            // ENVIAR CORREO DESPUÉS
+            Mailer::enviarVerificacion(
                 $correo,
                 $nombres,
                 $token
             );
 
+        } catch (Exception $e) {
             file_put_contents(
                 "/tmp/mail_debug.txt",
-                "Resultado mail: " . ($resultadoMail ? "OK" : "FAIL") . "\n",
+                "Error: " . $e->getMessage() . "\n",
                 FILE_APPEND
             );
-        } catch (Exception $e) {
-            file_put_contents("/tmp/mail_debug.txt", "Error: " . $e->getMessage() . "\n", FILE_APPEND);
         }
 
         return jsonResponse(true, "Usuario registrado");
