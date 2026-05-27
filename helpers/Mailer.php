@@ -87,7 +87,7 @@ class Mailer
             ";
 
             $mail->send();
-
+            error_log("CORREO ENVIADO A: " . $correo);
             return true;
 
         } catch (Exception $e) {
