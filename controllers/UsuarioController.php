@@ -125,19 +125,22 @@ class UsuarioController
             );
         }
 
-        file_put_contents("/tmp/debug.txt", "=== ANTES DEL MAILER ===\n", FILE_APPEND);
-
         try {
             require_once __DIR__ . "/../helpers/Mailer.php";
-            file_put_contents("/tmp/debug.txt", "=== MAILER CARGADO ===\n", FILE_APPEND);
-            Mailer::enviarVerificacion($correo, $nombres, $token);
-            file_put_contents("/tmp/debug.txt", "=== CORREO ENVIADO ===\n", FILE_APPEND);
-        } catch (Throwable $e) {
-            file_put_contents("/tmp/debug.txt", "=== ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
+
+            Mailer::enviarVerificacion(
+                $correo,
+                $nombres,
+                $token
+            );
+        } catch (Exception $e) {
+            error_log("Error email: " . $e->getMessage());
         }
 
-        file_put_contents("/tmp/debug.txt", "=== DESPUES DEL MAILER ===\n", FILE_APPEND);
-
+        return jsonResponse(
+            true,
+            "Usuario registrado"
+        );
     }
 
     /*
