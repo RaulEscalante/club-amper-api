@@ -1,2 +1,14 @@
 {
+    "name": "club-amper-api/backend",
+    "description": "API Club Amper",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Raul"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "phpmailer/phpmailer": "6.12"
+    }
 }
