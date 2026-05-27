@@ -14,11 +14,7 @@ class Mailer
         $token
     ) {
 
-        $mail = new PHPMailer(true);
-        $mail->SMTPDebug = 2;
-        $mail->Debugoutput = function ($str, $level) {
-            error_log("SMTP[$level]: $str");
-        };
+        $mail = new PHPMailer(true);   
 
         try {
 
