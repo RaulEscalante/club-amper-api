@@ -19,23 +19,23 @@ class Mailer
         try {
 
             $mail->isSMTP();
+            
+            $mail->SMTPDebug = 0;
+            $mail->Debugoutput = 'error_log';
 
-            $mail->Host = "smtp.gmail.com";
+            $mail->Host = "mail.ampercompany.com.pe";
             $mail->SMTPAuth = true;
-
-            $mail->Username = "raulescalantem14@gmail.com";
-            $mail->Password = "lrpb pnju eils bizq";
-
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-
+            
+            $mail->Username = "no-reply@ampercompany.com.pe";
+            $mail->Password = "ClubAmper2025!";
+            
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = 465;
+            
             $mail->CharSet = "UTF-8";
 
             // REMITENTE
-            $mail->setFrom(
-                getenv("SMTP_FROM"),
-                "Club Amper"
-            );
+            $mail->setFrom("no-reply@ampercompany.com.pe", "Club Amper");
 
             // DESTINO
             $mail->addAddress(
@@ -44,10 +44,7 @@ class Mailer
             );
 
             // LINK
-            $link =
-                getenv("APP_URL")
-                . "/verificar?token="
-                . $token;
+            $link = "https://club-amper.vercel.app/verificar?token=" . $token;
 
             // CONTENIDO
             $mail->isHTML(true);
@@ -88,7 +85,7 @@ class Mailer
         } catch (Exception $e) {
             error_log("MAIL ERROR: " . $mail->ErrorInfo);
 
-            error_log($mail->ErrorInfo);
+            error_log("EXCEPTION: " . $e->getMessage());
 
             return false;
         }
