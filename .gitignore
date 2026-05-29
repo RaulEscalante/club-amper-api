@@ -1,1 +1,8 @@
 /vendor/
+.env
+
+/logs/
+/tmp/
+/uploads/
+
+*.log
