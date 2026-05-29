@@ -2,7 +2,6 @@
 
 class Database
 {
-
     private $host;
     private $db_name;
     private $username;
@@ -13,32 +12,25 @@ class Database
 
     public function __construct()
     {
+        $this->host = $_ENV['DB_HOST'];
 
-        $this->host =
-            $_ENV['DB_HOST'] ?? "localhost";
+        $this->db_name = $_ENV['DB_NAME'];
 
-        $this->db_name =
-            $_ENV['DB_NAME'] ?? "club_amper";
+        $this->username = $_ENV['DB_USER'];
 
-        $this->username =
-            $_ENV['DB_USER'] ?? "root";
+        $this->password = $_ENV['DB_PASSWORD'];
 
-        $this->password =
-            $_ENV['DB_PASSWORD'] ?? "";
-
-        $this->port =
-            $_ENV['DB_PORT'] ?? 3306;
+        $this->port = $_ENV['DB_PORT'];
     }
 
     public function getConnection()
     {
-
         $this->conn = null;
 
         try {
 
             $this->conn = new PDO(
-                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name}",
+                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=utf8mb4",
                 $this->username,
                 $this->password
             );
@@ -48,12 +40,21 @@ class Database
                 PDO::ERRMODE_EXCEPTION
             );
 
+            $this->conn->setAttribute(
+                PDO::ATTR_DEFAULT_FETCH_MODE,
+                PDO::FETCH_ASSOC
+            );
+
         } catch (PDOException $exception) {
+
+            error_log("DB ERROR: " . $exception->getMessage());
 
             echo json_encode([
                 "success" => false,
-                "error" => $exception->getMessage()
+                "message" => "Error de conexión"
             ]);
+
+            exit;
         }
 
         return $this->conn;
