@@ -1,4 +1,7 @@
 <?php
+if (php_sapi_name() !== 'cli') {
+    exit('Acceso denegado');
+}
 
 require_once __DIR__ . "/../config/bootstrap.php";
 require_once __DIR__ . "/../helpers/ERPHelper.php";
@@ -39,8 +42,13 @@ while (true) {
 
     if (!$response["success"]) {
 
-        echo "Error ERP: " .
-            $response["message"];
+        error_log(
+            "[" . date("Y-m-d H:i:s") . "] ERP ERROR: "
+            . $response["message"]
+            . PHP_EOL,
+            3,
+            __DIR__ . "/../logs/cron-error.log"
+        );
 
         exit;
     }
@@ -145,7 +153,20 @@ while (true) {
 | FINAL
 |----------------------------------------------------------------------
 */
-echo
-    "Sincronización completada. " .
-    $totalProcesados .
-    " registros procesados.";
+if (php_sapi_name() === 'cli') {
+
+    echo
+        "Sincronización completada. "
+        . $totalProcesados
+        . " registros procesados.";
+}
+
+
+error_log(
+    "[" . date("Y-m-d H:i:s") . "] "
+    . $totalProcesados
+    . " registros sincronizados"
+    . PHP_EOL,
+    3,
+    __DIR__ . "/../logs/cron.log"
+);

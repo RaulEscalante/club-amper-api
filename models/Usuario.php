@@ -126,23 +126,27 @@ class Usuario
     {
         $sql = "
         SELECT
-            id,
-            tipo_documento,
-            documento,
-            nombres,
-            apellidos,
-            correo,
-            telefono,
-            puntos,
-            rol_id,
-            estado
-        FROM usuarios
-        WHERE id = :id
+            u.id,
+            u.tipo_documento,
+            u.documento,
+            u.nombres,
+            u.apellidos,
+            u.correo,
+            u.telefono,
+            COALESCE(pc.puntos, 0) AS puntos,
+            u.rol_id,
+            u.estado
+        FROM usuarios u
+        LEFT JOIN puntos_cache pc
+            ON u.documento = pc.documento
+        WHERE u.id = :id
         LIMIT 1
     ";
 
         $stmt = $this->conn->prepare($sql);
+
         $stmt->bindParam(":id", $id);
+
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
