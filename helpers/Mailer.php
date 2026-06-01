@@ -105,22 +105,22 @@ class Mailer
 
             $mail->isSMTP();
 
-            $mail->Host = getenv("SMTP_HOST");
+            $mail->Host = $_ENV['SMTP_HOST'];
+
             $mail->SMTPAuth = true;
 
-            $mail->Username = getenv("SMTP_USER");
-            $mail->Password = getenv("SMTP_PASS");
+            $mail->Username = $_ENV['SMTP_USER'];
+
+            $mail->Password = $_ENV['SMTP_PASS'];
 
             $mail->SMTPSecure =
                 PHPMailer::ENCRYPTION_SMTPS;
 
             $mail->Port =
-                getenv("SMTP_PORT");
-
-            $mail->CharSet = "UTF-8";
+                $_ENV['SMTP_PORT'];
 
             $mail->setFrom(
-                getenv("SMTP_FROM"),
+                $_ENV['SMTP_FROM'],
                 "Club Amper"
             );
 
@@ -130,7 +130,7 @@ class Mailer
             );
 
             $link =
-                getenv("APP_URL")
+                $_ENV['APP_URL']
                 . "/reset-password?token="
                 . $token;
 
@@ -180,6 +180,122 @@ class Mailer
 
             error_log(
                 "MAIL RESET ERROR: "
+                . $mail->ErrorInfo
+            );
+
+            return false;
+        }
+    }
+
+    public static function enviarNotificacionCanje(
+        $canje_id,
+        $usuario,
+        $productos,
+        $total_puntos
+    ) {
+        $mail = new PHPMailer(true);
+
+        try {
+
+            $mail->isSMTP();
+
+            $mail->Host = $_ENV['SMTP_HOST'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $_ENV['SMTP_USER'];
+            $mail->Password = $_ENV['SMTP_PASS'];
+            $mail->SMTPSecure =
+                PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port = $_ENV['SMTP_PORT'];
+
+            $mail->CharSet = "UTF-8";
+
+            $mail->setFrom(
+                $_ENV['SMTP_FROM'],
+                "Club Amper"
+            );
+
+            /*
+            |------------------------------------------------------------
+            | CORREO DEL ENCARGADO
+            |------------------------------------------------------------
+            */
+            $mail->addAddress($_ENV['MAIL_CANJES']);
+
+            $productosHtml = "";
+
+            foreach ($productos as $producto) {
+
+                $productosHtml .= "
+                <tr>
+                    <td>{$producto['nombre_producto']}</td>
+                    <td>{$producto['cantidad']}</td>
+                    <td>{$producto['subtotal_puntos']}</td>
+                </tr>
+            ";
+            }
+
+            $mail->isHTML(true);
+
+            $mail->Subject =
+                "Nuevo canje #{$canje_id}";
+
+            $mail->Body = "
+            <h2>Nuevo Canje Registrado</h2>
+
+            <p>
+                <strong>Ticket:</strong>
+                #{$canje_id}
+            </p>
+
+            <p>
+                <strong>Cliente:</strong>
+                {$usuario['nombres']} {$usuario['apellidos']}
+            </p>
+
+            <p>
+                <strong>Documento:</strong>
+                {$usuario['documento']}
+            </p>
+
+            <p>
+                <strong>Correo:</strong>
+                {$usuario['correo']}
+            </p>
+
+            <table
+                border='1'
+                cellpadding='8'
+                cellspacing='0'
+                width='100%'
+            >
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Puntos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {$productosHtml}
+                </tbody>
+            </table>
+
+            <br>
+
+            <p>
+                <strong>Total puntos:</strong>
+                {$total_puntos}
+            </p>
+        ";
+
+            $mail->send();
+
+            return true;
+
+        } catch (Exception $e) {
+
+            error_log(
+                "MAIL CANJE ERROR: "
                 . $mail->ErrorInfo
             );
 

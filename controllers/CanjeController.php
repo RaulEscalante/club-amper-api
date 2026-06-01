@@ -172,6 +172,9 @@ class CanjeController
                 $total_puntos
             );
 
+            $puntos_restantes =
+                $user["puntos"] - $total_puntos;
+
             /*
             |--------------------------------------------------------------------------
             | CONFIRMAR TRANSACCIÓN
@@ -179,17 +182,36 @@ class CanjeController
             */
             $this->conn->commit();
 
+            Mailer::enviarNotificacionCanje(
+                $canje_id,
+                $user,
+                $productos_final,
+                $total_puntos
+            );
+
             /*
             |--------------------------------------------------------------------------
             | RESPUESTA FINAL
             |--------------------------------------------------------------------------
             */
 
-            $mensaje = urlencode(
-                "Canje #$canje_id realizado correctamente"
-            );
+            $mensaje = "Hola, acabo de realizar un canje.\n\n";
 
-            $whatsapp_url = "https://wa.me/51980563502?text=" . $mensaje;
+            $mensaje .= "Ticket: #{$canje_id}\n";
+            $mensaje .= "Cliente: {$user['nombres']} {$user['apellidos']}\n";
+            $mensaje .= "Documento: {$user['documento']}\n\n";
+
+            $mensaje .= "Productos:\n";
+
+            foreach ($productos_final as $producto) {
+
+                $mensaje .=
+                    "- {$producto['nombre_producto']} x{$producto['cantidad']}\n";
+            }
+
+            $mensaje .= "\nTotal puntos: {$total_puntos}";
+
+            $whatsapp_url = "https://wa.me/51933686366?text=" . urlencode($mensaje);
 
             return [
                 "success" => true,
