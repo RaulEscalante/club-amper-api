@@ -1,10 +1,17 @@
 <?php
-
+/**/
 function obtenerClientesERP($offset = 0)
 {
-    $url = getenv("ERP_URL");
+    $url = $_ENV["ERP_URL"] ?? null;
 
-    $token = getenv("ERP_TOKEN");
+    $token = $_ENV["ERP_TOKEN"] ?? null;
+    
+    if (empty($url) || empty($token)) {
+        return [
+            "success" => false,
+            "message" => "ERP_URL o ERP_TOKEN no configurados"
+        ];
+    }
 
     $payload = [
         "apiPOS_getCustomers" => 1,
@@ -39,12 +46,12 @@ function obtenerClientesERP($offset = 0)
     |----------------------------------------------------------------------
     */
     if (curl_errno($ch)) {
-
+        $error = curl_error($ch);
         curl_close($ch);
 
         return [
             "success" => false,
-            "message" => curl_error($ch)
+            "message" => $error
         ];
     }
 

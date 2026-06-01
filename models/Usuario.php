@@ -210,4 +210,87 @@ class Usuario
 
         return $updateStmt->execute();
     }
+
+    public function buscarPorCorreo($correo)
+    {
+        $sql = "
+        SELECT id, correo, nombres
+        FROM usuarios
+        WHERE correo = :correo
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            ":correo" => $correo
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function guardarResetToken(
+        $id,
+        $token,
+        $expira
+    ) {
+        $sql = "
+        UPDATE usuarios
+        SET
+            reset_token = :token,
+            reset_expira = :expira
+        WHERE id = :id
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ":token" => $token,
+            ":expira" => $expira,
+            ":id" => $id
+        ]);
+    }
+    public function buscarTokenReset($token)
+    {
+        $sql = "
+        SELECT id
+        FROM usuarios
+        WHERE
+            reset_token = :token
+            AND reset_expira >= NOW()
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            ":token" => $token
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function actualizarPassword(
+        $id,
+        $password
+    ) {
+        $hash = password_hash(
+            $password,
+            PASSWORD_DEFAULT
+        );
+
+        $sql = "
+        UPDATE usuarios
+        SET
+            password = :password,
+            reset_token = NULL,
+            reset_expira = NULL
+        WHERE id = :id
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ":password" => $hash,
+            ":id" => $id
+        ]);
+    }
 }

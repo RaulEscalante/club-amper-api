@@ -290,4 +290,132 @@ class UsuarioController
 
         return ["success" => true, "message" => "Correo verificado correctamente"];
     }
+    public function forgotPassword()
+    {
+        $data = json_decode(
+            file_get_contents("php://input"),
+            true
+        );
+
+        $correo = trim(
+            $data["correo"] ?? ""
+        );
+
+        if (empty($correo)) {
+
+            return jsonResponse(
+                false,
+                "Correo obligatorio",
+                null,
+                400
+            );
+        }
+
+        $usuario =
+            $this->usuarioModel
+                ->buscarPorCorreo($correo);
+
+        /*
+        |------------------------------------------------------
+        | No revelar si existe o no
+        |------------------------------------------------------
+        */
+        if (!$usuario) {
+
+            return jsonResponse(
+                true,
+                "Si el correo existe, recibirás instrucciones"
+            );
+        }
+
+        $token =
+            bin2hex(random_bytes(32));
+
+        $expira =
+            date(
+                "Y-m-d H:i:s",
+                strtotime("+1 hour")
+            );
+
+        $this->usuarioModel
+            ->guardarResetToken(
+                $usuario["id"],
+                $token,
+                $expira
+            );
+
+        require_once __DIR__ . "/../helpers/Mailer.php";
+
+        Mailer::enviarRecuperacion(
+            $usuario["correo"],
+            $usuario["nombres"],
+            $token
+        );
+
+        return jsonResponse(
+            true,
+            "Si el correo existe, recibirás instrucciones"
+        );
+    }
+    public function resetPassword()
+    {
+        $data = json_decode(
+            file_get_contents("php://input"),
+            true
+        );
+
+        $token =
+            trim($data["token"] ?? "");
+
+        $password =
+            trim($data["password"] ?? "");
+
+        if (
+            empty($token) ||
+            empty($password)
+        ) {
+
+            return jsonResponse(
+                false,
+                "Datos incompletos",
+                null,
+                400
+            );
+        }
+
+        if (strlen($password) < 6) {
+
+            return jsonResponse(
+                false,
+                "La contraseña debe tener mínimo 6 caracteres",
+                null,
+                400
+            );
+        }
+
+        $usuario =
+            $this->usuarioModel
+                ->buscarTokenReset($token);
+
+        if (!$usuario) {
+
+            return jsonResponse(
+                false,
+                "Token inválido o expirado",
+                null,
+                400
+            );
+        }
+
+        $this->usuarioModel
+            ->actualizarPassword(
+                $usuario["id"],
+                $password
+            );
+
+        return jsonResponse(
+            true,
+            "Contraseña actualizada correctamente"
+        );
+    }
 }

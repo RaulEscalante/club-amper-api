@@ -93,4 +93,97 @@ class Mailer
             return false;
         }
     }
+
+    public static function enviarRecuperacion(
+        $correo,
+        $nombre,
+        $token
+    ) {
+        $mail = new PHPMailer(true);
+
+        try {
+
+            $mail->isSMTP();
+
+            $mail->Host = getenv("SMTP_HOST");
+            $mail->SMTPAuth = true;
+
+            $mail->Username = getenv("SMTP_USER");
+            $mail->Password = getenv("SMTP_PASS");
+
+            $mail->SMTPSecure =
+                PHPMailer::ENCRYPTION_SMTPS;
+
+            $mail->Port =
+                getenv("SMTP_PORT");
+
+            $mail->CharSet = "UTF-8";
+
+            $mail->setFrom(
+                getenv("SMTP_FROM"),
+                "Club Amper"
+            );
+
+            $mail->addAddress(
+                $correo,
+                $nombre
+            );
+
+            $link =
+                getenv("APP_URL")
+                . "/reset-password?token="
+                . $token;
+
+            $mail->isHTML(true);
+
+            $mail->Subject =
+                "Recuperación de contraseña";
+
+            $mail->Body = "
+            <h2>Recuperación de contraseña</h2>
+
+            <p>
+                Hola {$nombre}
+            </p>
+
+            <p>
+                Hemos recibido una solicitud para cambiar tu contraseña.
+            </p>
+
+            <p>
+                Haz click en el siguiente botón:
+            </p>
+
+            <a href='{$link}'
+               style='
+                    background:#bb1818;
+                    color:white;
+                    padding:12px 18px;
+                    text-decoration:none;
+                    border-radius:8px;
+                    display:inline-block;
+               '
+            >
+                Restablecer contraseña
+            </a>
+
+            <p>
+                Este enlace expirará en 1 hora.
+            </p>
+        ";
+
+            $mail->send();
+
+            return true;
+
+        } catch (Exception $e) {
+
+            error_log(
+                "MAIL RESET ERROR: "
+                . $mail->ErrorInfo
+            );
+
+            return false;
+        }
+    }
 }

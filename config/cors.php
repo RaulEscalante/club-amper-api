@@ -1,5 +1,9 @@
 <?php
 
+if (php_sapi_name() === 'cli') {
+    return;
+}
+
 $allowedOrigins = [
     "https://club-amper.vercel.app",
     "https://clubamper.com"
@@ -16,7 +20,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization, Accept, usuar
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Content-Type: application/json");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
     http_response_code(200);
     exit;
