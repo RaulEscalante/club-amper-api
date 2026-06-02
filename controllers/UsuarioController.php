@@ -418,4 +418,67 @@ class UsuarioController
             "Contraseña actualizada correctamente"
         );
     }
+
+    public function reenviarVerificacion()
+    {
+        $data = json_decode(
+            file_get_contents("php://input"),
+            true
+        );
+
+        $correo =
+            trim($data["correo"] ?? "");
+
+        if (empty($correo)) {
+
+            return [
+                "success" => false,
+                "message" => "Correo requerido"
+            ];
+        }
+
+        $usuario =
+            $this->usuarioModel
+                ->buscarPendienteVerificacion(
+                    $correo
+                );
+
+        if (!$usuario) {
+
+            return [
+                "success" => false,
+                "message" => "Usuario no encontrado"
+            ];
+        }
+
+        if (
+            (int) $usuario["email_verificado"] === 1
+        ) {
+
+            return [
+                "success" => false,
+                "message" => "La cuenta ya está verificada"
+            ];
+        }
+
+        $token =
+            bin2hex(random_bytes(32));
+
+        $this->usuarioModel
+            ->actualizarTokenVerificacion(
+                $usuario["id"],
+                $token
+            );
+
+        Mailer::enviarVerificacion(
+            $usuario["correo"],
+            $usuario["nombres"],
+            $token
+        );
+
+        return [
+            "success" => true,
+            "message" => "Correo reenviado"
+        ];
+    }
 }

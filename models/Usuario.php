@@ -293,4 +293,45 @@ class Usuario
             ":id" => $id
         ]);
     }
+
+    public function buscarPendienteVerificacion($correo)
+    {
+        $sql = "
+        SELECT
+            id,
+            correo,
+            nombres,
+            email_verificado
+        FROM usuarios
+        WHERE correo = :correo
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            ":correo" => $correo
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function actualizarTokenVerificacion(
+        $id,
+        $token
+    ) {
+
+        $sql = "
+        UPDATE usuarios
+        SET token_verificacion = :token
+        WHERE id = :id
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ":token" => $token,
+            ":id" => $id
+        ]);
+    }
 }
