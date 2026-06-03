@@ -2,6 +2,7 @@
 require_once __DIR__ . "/../models/Usuario.php";
 require_once __DIR__ . "/../helpers/response.php";
 require_once __DIR__ . "/../helpers/validator.php";
+require_once __DIR__ . "/../helpers/Mailer.php";
 
 class UsuarioController
 {
@@ -125,8 +126,7 @@ class UsuarioController
             );
         }
 
-        try {
-            require_once __DIR__ . "/../helpers/Mailer.php";
+        try {           
 
             // IMPORTANTE: terminar respuesta HTTP
             if (function_exists('fastcgi_finish_request')) {
