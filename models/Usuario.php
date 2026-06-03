@@ -334,4 +334,45 @@ class Usuario
             ":id" => $id
         ]);
     }
+
+    public function actualizarCorreoPendiente(
+        $id,
+        $correo,
+        $token
+    ) {
+
+        $sql = "
+        UPDATE usuarios
+        SET
+            correo = :correo,
+            token_verificacion = :token
+        WHERE id = :id
+          AND email_verificado = 0
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ":correo" => $correo,
+            ":token" => $token,
+            ":id" => $id
+        ]);
+    }
+    public function existeCorreo($correo)
+    {
+        $sql = "
+        SELECT id
+        FROM usuarios
+        WHERE correo = :correo
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            ":correo" => $correo
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

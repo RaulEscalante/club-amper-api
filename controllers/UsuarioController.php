@@ -481,4 +481,88 @@ class UsuarioController
             "message" => "Correo reenviado"
         ];
     }
+
+    public function cambiarCorreoVerificacion()
+    {
+        $data = json_decode(
+            file_get_contents("php://input"),
+            true
+        );
+
+        $correo_actual =
+            trim($data["correo_actual"] ?? "");
+
+        $correo_nuevo =
+            trim($data["correo_nuevo"] ?? "");
+
+        if (
+            empty($correo_actual) ||
+            empty($correo_nuevo)
+        ) {
+
+            return [
+                "success" => false,
+                "message" => "Datos incompletos"
+            ];
+        }
+
+        $usuario =
+            $this->usuarioModel
+                ->buscarPendienteVerificacion(
+                    $correo_actual
+                );
+
+        if (!$usuario) {
+
+            return [
+                "success" => false,
+                "message" => "Usuario no encontrado"
+            ];
+        }
+
+        if (
+            (int) $usuario["email_verificado"] === 1
+        ) {
+
+            return [
+                "success" => false,
+                "message" => "La cuenta ya está verificada"
+            ];
+        }
+
+        $correoExistente =
+            $this->usuarioModel
+                ->existeCorreo(
+                    $correo_nuevo
+                );
+
+        if ($correoExistente) {
+
+            return [
+                "success" => false,
+                "message" => "El correo ya está registrado"
+            ];
+        }
+
+        $token =
+            bin2hex(random_bytes(32));
+
+        $this->usuarioModel
+            ->actualizarCorreoPendiente(
+                $usuario["id"],
+                $correo_nuevo,
+                $token
+            );
+
+        Mailer::enviarVerificacion(
+            $correo_nuevo,
+            $usuario["nombres"],
+            $token
+        );
+
+        return [
+            "success" => true,
+            "message" => "Correo actualizado correctamente"
+        ];
+    }
 }
