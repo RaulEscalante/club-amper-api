@@ -3,6 +3,7 @@
 require_once __DIR__ . "/../models/Canje.php";
 require_once __DIR__ . "/../models/Producto.php";
 require_once __DIR__ . "/../models/Usuario.php";
+require_once __DIR__ . "/../helpers/Mailer.php";
 
 class CanjeController
 {

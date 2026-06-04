@@ -133,13 +133,28 @@ class Usuario
             u.apellidos,
             u.correo,
             u.telefono,
-            COALESCE(pc.puntos, 0) AS puntos,
+
+            COALESCE(pc.puntos, 0)
+            -
+            COALESCE(u.puntos_consumidos, 0)
+            AS puntos,
+
+            COALESCE(pc.puntos, 0)
+            AS puntos_erp,
+
+            COALESCE(u.puntos_consumidos, 0)
+            AS puntos_consumidos,
+
             u.rol_id,
             u.estado
+
         FROM usuarios u
+
         LEFT JOIN puntos_cache pc
             ON u.documento = pc.documento
+
         WHERE u.id = :id
+
         LIMIT 1
     ";
 
