@@ -375,4 +375,71 @@ class Usuario
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function obtenerPuntosDisponibles(
+        $usuario_id
+    ) {
+
+        $sql = "
+        SELECT
+            u.id,
+            u.documento,
+            u.nombres,
+            u.apellidos,
+            u.correo,
+
+            COALESCE(pc.puntos, 0) AS puntos_erp,
+
+            COALESCE(
+                u.puntos_consumidos,
+                0
+            ) AS puntos_consumidos
+
+        FROM usuarios u
+
+        LEFT JOIN puntos_cache pc
+            ON pc.documento = u.documento
+
+        WHERE u.id = :id
+
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            ":id" => $usuario_id
+        ]);
+
+        $data =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$data) {
+            return null;
+        }
+
+        $data["puntos_disponibles"] =
+            $data["puntos_erp"] -
+            $data["puntos_consumidos"];
+
+        return $data;
+    }
+    public function registrarConsumoPuntos(
+        $usuario_id,
+        $puntos
+    ) {
+
+        $sql = "
+        UPDATE usuarios
+        SET puntos_consumidos =
+            puntos_consumidos + :puntos
+        WHERE id = :id
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ":puntos" => $puntos,
+            ":id" => $usuario_id
+        ]);
+    }
 }

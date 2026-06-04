@@ -129,24 +129,7 @@ class Canje
     |--------------------------------------------------------------------------
     */
 
-    public function descontarPuntos(
-        $usuario_id,
-        $puntos
-    ) {
-
-        $sql = "
-            UPDATE usuarios
-            SET puntos = puntos - :puntos
-            WHERE id = :id
-        ";
-
-        $stmt = $this->conn->prepare($sql);
-
-        return $stmt->execute([
-            ":puntos" => $puntos,
-            ":id" => $usuario_id
-        ]);
-    }
+    
 
     /*
     |--------------------------------------------------------------------------

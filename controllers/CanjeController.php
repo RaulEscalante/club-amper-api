@@ -2,11 +2,13 @@
 
 require_once __DIR__ . "/../models/Canje.php";
 require_once __DIR__ . "/../models/Producto.php";
+require_once __DIR__ . "/../models/Usuario.php";
 
 class CanjeController
 {
     private $canje;
     private $producto;
+    private $usuarioModel;
     private $conn;
 
     public function __construct($db)
@@ -14,6 +16,7 @@ class CanjeController
         $this->conn = $db;
         $this->canje = new Canje($db);
         $this->producto = new Producto($db);
+        $this->usuarioModel = new Usuario($db);
     }
     /*
     |--------------------------------------------------------------------------
@@ -118,18 +121,29 @@ class CanjeController
             | VALIDAR PUNTOS USUARIO
             |--------------------------------------------------------------------------
             */
-            $stmtUser = $this->conn->prepare("
-                SELECT * FROM usuarios 
-                WHERE id = :id 
-                FOR UPDATE
-            ");
+            $user =
+                $this->usuarioModel
+                    ->obtenerPuntosDisponibles(
+                        $usuario["id"]
+                    );
 
-            $stmtUser->bindParam(":id", $usuario["id"]);
-            $stmtUser->execute();
-            $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+            if (!$user) {
 
-            if ($user["puntos"] < $total_puntos) {
                 $this->conn->rollBack();
+
+                return [
+                    "success" => false,
+                    "message" => "Usuario no encontrado"
+                ];
+            }
+
+            if (
+                $user["puntos_disponibles"]
+                < $total_puntos
+            ) {
+
+                $this->conn->rollBack();
+
                 return [
                     "success" => false,
                     "message" => "No tienes puntos suficientes"
@@ -167,13 +181,12 @@ class CanjeController
             | DESCONTAR PUNTOS USUARIO
             |--------------------------------------------------------------------------
             */
-            $this->canje->descontarPuntos(
+            $this->usuarioModel->registrarConsumoPuntos(
                 $usuario["id"],
                 $total_puntos
             );
 
-            $puntos_restantes =
-                $user["puntos"] - $total_puntos;
+            $puntos_restantes = $user["puntos_disponibles"] - $total_puntos;
 
             /*
             |--------------------------------------------------------------------------
