@@ -10,6 +10,8 @@ class Mailer
     public static function enviarVerificacion($correo, $nombre, $token)
     {
         $mail = new PHPMailer(true);
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
 
         try {
 
@@ -100,6 +102,8 @@ class Mailer
         $token
     ) {
         $mail = new PHPMailer(true);
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
 
         try {
 
@@ -194,6 +198,8 @@ class Mailer
         $total_puntos
     ) {
         $mail = new PHPMailer(true);
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
 
         try {
 
@@ -272,7 +278,7 @@ class Mailer
                     <tr>
                         <th>Producto</th>
                         <th>Cantidad</th>
-                        <th>Puntos</th>
+                        <th>Pun tos</th>
                     </tr>
                 </thead>
                 <tbody>
