@@ -126,7 +126,7 @@ class UsuarioController
             );
         }
 
-        try {           
+        try {
 
             // IMPORTANTE: terminar respuesta HTTP
             if (function_exists('fastcgi_finish_request')) {
@@ -564,5 +564,80 @@ class UsuarioController
             "success" => true,
             "message" => "Correo actualizado correctamente"
         ];
+    }
+    public function cambiarPassword($usuario)
+    {
+        $data = json_decode(
+            file_get_contents("php://input"),
+            true
+        );
+
+        $passwordActual =
+            trim($data["password_actual"] ?? "");
+
+        $passwordNueva =
+            trim($data["password_nueva"] ?? "");
+
+        if (
+            empty($passwordActual) ||
+            empty($passwordNueva)
+        ) {
+
+            return jsonResponse(
+                false,
+                "Datos incompletos",
+                null,
+                400
+            );
+        }
+
+        if (strlen($passwordNueva) < 6) {
+
+            return jsonResponse(
+                false,
+                "La nueva contraseña debe tener mínimo 6 caracteres",
+                null,
+                400
+            );
+        }
+
+        $resultado =
+            $this->usuarioModel
+                ->cambiarPassword(
+                    $usuario["id"],
+                    $passwordActual,
+                    $passwordNueva
+                );
+
+        if (
+            $resultado ===
+            "password_incorrecta"
+        ) {
+
+            return jsonResponse(
+                false,
+                "La contraseña actual es incorrecta",
+                null,
+                400
+            );
+        }
+
+        if (
+            $resultado ===
+            "usuario_no_encontrado"
+        ) {
+
+            return jsonResponse(
+                false,
+                "Usuario no encontrado",
+                null,
+                404
+            );
+        }
+
+        return jsonResponse(
+            true,
+            "Contraseña actualizada correctamente"
+        );
     }
 }

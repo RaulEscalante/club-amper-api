@@ -457,4 +457,58 @@ class Usuario
             ":id" => $usuario_id
         ]);
     }
+
+    public function cambiarPassword(
+        $id,
+        $passwordActual,
+        $passwordNueva
+    ) {
+
+        $sql = "
+        SELECT password
+        FROM usuarios
+        WHERE id = :id
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute([
+            ":id" => $id
+        ]);
+
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$usuario) {
+            return "usuario_no_encontrado";
+        }
+
+        if (
+            !password_verify(
+                $passwordActual,
+                $usuario["password"]
+            )
+        ) {
+            return "password_incorrecta";
+        }
+
+        $hash = password_hash(
+            $passwordNueva,
+            PASSWORD_DEFAULT
+        );
+
+        $updateSql = "
+        UPDATE usuarios
+        SET password = :password
+        WHERE id = :id
+    ";
+
+        $updateStmt =
+            $this->conn->prepare($updateSql);
+
+        return $updateStmt->execute([
+            ":password" => $hash,
+            ":id" => $id
+        ]);
+    }
 }
