@@ -640,4 +640,97 @@ class UsuarioController
             "Contraseña actualizada correctamente"
         );
     }
+
+    public function cambiarCorreoPerfil(
+        $usuario
+    ) {
+
+        $data = json_decode(
+            file_get_contents("php://input"),
+            true
+        );
+
+        $correoNuevo =
+            trim($data["correo"] ?? "");
+
+        if (empty($correoNuevo)) {
+
+            return jsonResponse(
+                false,
+                "Debe ingresar un correo"
+            );
+
+        }
+
+        if (
+            !filter_var(
+                $correoNuevo,
+                FILTER_VALIDATE_EMAIL
+            )
+        ) {
+
+            return jsonResponse(
+                false,
+                "Correo inválido"
+            );
+
+        }
+
+        $result =
+            $this->usuarioModel
+                ->solicitarCambioCorreo(
+                    $usuario["id"],
+                    $correoNuevo
+                );
+
+        if (!$result["success"]) {
+
+            return jsonResponse(
+                false,
+                $result["message"]
+            );
+
+        }
+
+        try {
+
+            if (
+                function_exists(
+                    "fastcgi_finish_request"
+                )
+            ) {
+
+                fastcgi_finish_request();
+
+            }
+
+            Mailer::enviarVerificacion(
+
+                $correoNuevo,
+
+                $usuario["nombres"],
+
+                $result["token"]
+
+            );
+
+        } catch (Exception $e) {
+
+            file_put_contents(
+                "/tmp/mail_debug.txt",
+                $e->getMessage() . "\n",
+                FILE_APPEND
+            );
+
+        }
+
+        return jsonResponse(
+
+            true,
+
+            "Te enviamos un correo para confirmar el cambio."
+
+        );
+
+    }
 }

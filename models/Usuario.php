@@ -193,7 +193,9 @@ class Usuario
     public function verificarEmail($token)
     {
         $sql = "
-        SELECT id 
+        SELECT
+            id,
+            correo_pendiente
         FROM usuarios
         WHERE token_verificacion = :token
         LIMIT 1
@@ -211,17 +213,49 @@ class Usuario
             return false;
         }
 
-        $updateSql = "
-        UPDATE usuarios
-        SET 
-            email_verificado = 1,
-            token_verificacion = NULL
-        WHERE id = :id
-    ";
+        /*
+        |--------------------------------------------------------------------------
+        | REGISTRO NORMAL
+        |--------------------------------------------------------------------------
+        */
 
-        $updateStmt = $this->conn->prepare($updateSql);
+        if (empty($usuario["correo_pendiente"])) {
 
-        $updateStmt->bindParam(":id", $usuario["id"]);
+            $updateSql = "
+            UPDATE usuarios
+            SET
+                email_verificado = 1,
+                token_verificacion = NULL
+            WHERE id = :id
+        ";
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | CAMBIO DE CORREO
+            |--------------------------------------------------------------------------
+            */
+
+            $updateSql = "
+            UPDATE usuarios
+            SET
+                correo = correo_pendiente,
+                correo_pendiente = NULL,
+                email_verificado = 1,
+                token_verificacion = NULL
+            WHERE id = :id
+        ";
+
+        }
+
+        $updateStmt =
+            $this->conn->prepare($updateSql);
+
+        $updateStmt->bindParam(
+            ":id",
+            $usuario["id"]
+        );
 
         return $updateStmt->execute();
     }
@@ -510,5 +544,82 @@ class Usuario
             ":password" => $hash,
             ":id" => $id
         ]);
+    }
+
+    public function solicitarCambioCorreo(
+        $id,
+        $correoNuevo
+    ) {
+
+        $sql = "
+        SELECT id
+        FROM usuarios
+        WHERE correo = :correo
+        LIMIT 1
+    ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bindParam(
+            ":correo",
+            $correoNuevo
+        );
+
+        $stmt->execute();
+
+        if ($stmt->fetch()) {
+
+            return [
+                "success" => false,
+                "message" =>
+                    "El correo ya está registrado"
+            ];
+
+        }
+
+        $token =
+            bin2hex(random_bytes(32));
+
+        $sql = "
+        UPDATE usuarios
+        SET
+            correo_pendiente = :correo,
+            token_verificacion = :token
+        WHERE id = :id
+    ";
+
+        $stmt =
+            $this->conn->prepare($sql);
+
+        $stmt->bindParam(
+            ":correo",
+            $correoNuevo
+        );
+
+        $stmt->bindParam(
+            ":token",
+            $token
+        );
+
+        $stmt->bindParam(
+            ":id",
+            $id
+        );
+
+        if (!$stmt->execute()) {
+
+            return [
+                "success" => false,
+                "message" =>
+                    "No se pudo actualizar el correo"
+            ];
+
+        }
+
+        return [
+            "success" => true,
+            "token" => $token
+        ];
+
     }
 }
